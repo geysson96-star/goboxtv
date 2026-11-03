@@ -3,3 +3,4 @@ node_modules/
 .dev.vars
 MASTER_KEY.txt
 wrangler.local.toml
+convites/
