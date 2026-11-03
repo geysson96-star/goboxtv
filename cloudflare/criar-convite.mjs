@@ -38,7 +38,7 @@ const msg = [
   `Servidor: ${base.replace(/^https:\/\//, '')}`,
   `Código: ${u.code}`,
   ``,
-  `1) Baixe o app: https://github.com/geysson96-star/vidro-tv-app/releases/latest`,
+  `1) Baixe o app: https://github.com/geysson96-star/goboxtv/releases/latest`,
   `   (VidroTV.apk para celular/TV Box, ou o instalador para Windows)`,
   `2) Abra o app, digite o servidor (só na primeira vez) e depois o código.`,
   `Vale para ${u.maxDevices} aparelhos.`,

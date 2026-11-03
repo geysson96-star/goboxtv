@@ -13,7 +13,7 @@ vidro-tv/
 ## Downloads
 
 Última versão (APK para celular/Android TV/TV Box e instalador para Windows):
-**https://github.com/geysson96-star/vidro-tv-app/releases/latest**
+**https://github.com/geysson96-star/goboxtv/releases/latest**
 
 ## O que o app faz
 
