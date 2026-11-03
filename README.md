@@ -10,6 +10,11 @@ vidro-tv/
 └── desktop/   → embala a versão web como programa de computador (Electron)
 ```
 
+## Downloads
+
+Última versão (APK para celular/Android TV/TV Box e instalador para Windows):
+**https://github.com/geysson96-star/vidro-tv-app/releases/latest**
+
 ## O que o app faz
 
 - **Menus:** Início, Buscar, Ao Vivo, Programação, Guia de TV, Filmes, Séries, Lançamentos, Configurações e Usuários (só master).
