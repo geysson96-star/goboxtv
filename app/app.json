@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "Vidro TV",
-    "slug": "vidro-tv",
-    "scheme": "vidrotv",
+    "name": "GoBoxTV",
+    "slug": "goboxtv",
+    "scheme": "goboxtv",
     "version": "1.0.0",
     "orientation": "default",
     "userInterfaceStyle": "dark",
@@ -10,16 +10,16 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.vidrotv.app"
+      "bundleIdentifier": "com.goboxtv.app"
     },
     "android": {
-      "package": "com.vidrotv.app",
+      "package": "com.goboxtv.app",
       "usesCleartextTraffic": true
     },
     "web": {
       "output": "single",
       "bundler": "metro",
-      "name": "Vidro TV",
+      "name": "GoBoxTV",
       "backgroundColor": "#070A12"
     },
     "plugins": [

@@ -1,4 +1,4 @@
-# Compila o Vidro TV de graça no GitHub:
+# Compila o GoBoxTV de graça no GitHub:
 #  - APK para celular, Android TV e TV Box
 #  - Instalador para Windows (.exe)
 # Roda sozinho a cada envio para a branch main, ou pelo botão "Run workflow" na aba Actions.
@@ -50,15 +50,15 @@ jobs:
             echo "$KS_B64" | base64 -d > vidro.jks
             BT=$(ls -d $ANDROID_HOME/build-tools/* | sort -V | tail -1)
             $BT/zipalign -f -p 4 "$APK" aligned.apk
-            $BT/apksigner sign --ks vidro.jks --ks-key-alias vidro --ks-pass env:KS_PASS --key-pass env:KS_PASS --out out/VidroTV.apk aligned.apk
+            $BT/apksigner sign --ks vidro.jks --ks-key-alias vidro --ks-pass env:KS_PASS --key-pass env:KS_PASS --out out/GoBoxTV.apk aligned.apk
             rm -f vidro.jks
           else
-            cp "$APK" out/VidroTV.apk
+            cp "$APK" out/GoBoxTV.apk
           fi
       - uses: actions/upload-artifact@v4
         with:
-          name: VidroTV-Android
-          path: out/VidroTV.apk
+          name: GoBoxTV-Android
+          path: out/GoBoxTV.apk
 
   windows:
     name: Instalador Windows
@@ -85,11 +85,11 @@ jobs:
           CSC_IDENTITY_AUTO_DISCOVERY: false
       - name: Separar instalador
         shell: bash
-        run: mkdir -p out && cp desktop/dist/*.exe "out/VidroTV-Instalador-Windows.exe"
+        run: mkdir -p out && cp desktop/dist/*.exe "out/GoBoxTV-Instalador-Windows.exe"
       - uses: actions/upload-artifact@v4
         with:
-          name: VidroTV-Windows
-          path: out/VidroTV-Instalador-Windows.exe
+          name: GoBoxTV-Windows
+          path: out/GoBoxTV-Instalador-Windows.exe
 
   release:
     name: Publicar downloads
@@ -105,5 +105,5 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           TAG="v$(date -u +%Y.%m.%d-%H%M)"
-          gh release create "$TAG" files/* --repo "$GITHUB_REPOSITORY" --title "Vidro TV $TAG" \
+          gh release create "$TAG" files/* --repo "$GITHUB_REPOSITORY" --title "GoBoxTV $TAG" \
             --notes "APK: instale no celular, Android TV ou TV Box. EXE: instalador para Windows."

@@ -1,4 +1,4 @@
-# Vidro TV
+# GoBoxTV
 
 Player de IPTV com visual de vidro, feito para **Android / Android TV / TV Box (APK)** e **computador (Windows, macOS, Linux)**, com acesso só por convite.
 

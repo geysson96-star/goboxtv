@@ -48,7 +48,7 @@ async function createWindow() {
     minWidth: 960,
     minHeight: 600,
     backgroundColor: '#070A12',
-    title: 'Vidro TV',
+    title: 'GoBoxTV',
     autoHideMenuBar: true,
     webPreferences: { contextIsolation: true, sandbox: true },
   });

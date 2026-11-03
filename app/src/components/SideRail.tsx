@@ -68,7 +68,7 @@ export function SideRail() {
         <View style={{ width: 34, height: 34, borderRadius: 11, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' }}>
           <Ionicons name="play" size={16} color={colors.onAccent} />
         </View>
-        {expanded ? <T style={{ fontSize: 18, fontWeight: '800' }}>Vidro TV</T> : null}
+        {expanded ? <T style={{ fontSize: 18, fontWeight: '800' }}>GoBoxTV</T> : null}
       </View>
       {ITEMS.map(render)}
       <View style={{ flex: 1 }} />

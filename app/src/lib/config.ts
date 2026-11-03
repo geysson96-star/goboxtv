@@ -31,7 +31,7 @@ export function normalizeServerUrl(url: string): string {
 /** Chave gratuita do TMDB para capas e sinopses (opcional). https://www.themoviedb.org/settings/api */
 export const TMDB_KEY = process.env.EXPO_PUBLIC_TMDB_KEY || '';
 
-export const APP_NAME = 'Vidro TV';
+export const APP_NAME = 'GoBoxTV';
 
 /** Quanto tempo o app funciona sem conseguir falar com o servidor (ex.: internet instável). */
 export const OFFLINE_GRACE_MS = 72 * 3600e3;

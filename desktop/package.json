@@ -1,7 +1,7 @@
 {
-  "name": "vidro-tv-desktop",
+  "name": "goboxtv-desktop",
   "version": "1.0.0",
-  "description": "Vidro TV para computador",
+  "description": "GoBoxTV para computador",
   "main": "main.cjs",
   "private": true,
   "scripts": {
@@ -15,8 +15,8 @@
     "electron-builder": "^26.0.0"
   },
   "build": {
-    "appId": "com.vidrotv.desktop",
-    "productName": "Vidro TV",
+    "appId": "com.goboxtv.desktop",
+    "productName": "GoBoxTV",
     "files": [
       "main.cjs"
     ],
@@ -37,5 +37,5 @@
       "output": "dist"
     }
   },
-  "author": "Vidro TV"
+  "author": "GoBoxTV"
 }

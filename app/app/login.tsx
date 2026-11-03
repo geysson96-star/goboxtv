@@ -16,13 +16,13 @@ const inputStyle = {
   borderRadius: 18, paddingHorizontal: 20, color: colors.text, backgroundColor: 'rgba(0,0,0,0.3)', borderWidth: 2,
 } as const;
 
-/** Confere se o endereço é mesmo um servidor do Vidro TV. */
+/** Confere se o endereço é mesmo um servidor do GoBoxTV. */
 async function checkServer(url: string) {
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), 10000);
   try {
     const r = await fetch(url + '/', { signal: ctrl.signal }).then((x) => x.json());
-    return r?.name === 'Vidro TV server';
+    return r?.name === 'GoBoxTV server';
   } catch {
     return false;
   } finally {
@@ -82,7 +82,7 @@ export default function Login() {
     setError(null);
     const ok = await checkServer(url);
     setBusy(false);
-    if (!ok) return setError('Não encontrei um servidor do Vidro TV nesse endereço. Confira o que veio no convite.');
+    if (!ok) return setError('Não encontrei um servidor do GoBoxTV nesse endereço. Confira o que veio no convite.');
     setApiUrl(url);
     await setJSON('serverUrl', url);
     setServer(url);
@@ -113,7 +113,7 @@ export default function Login() {
         <View style={{ flexGrow: 1, flexBasis: phone ? '100%' : 420, padding: phone ? 24 : 44, gap: 14 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
             <View style={{ width: 44, height: 44, borderRadius: 14, backgroundColor: colors.accent }} />
-            <T style={{ fontSize: 24, fontWeight: '800' }}>Vidro TV</T>
+            <T style={{ fontSize: 24, fontWeight: '800' }}>GoBoxTV</T>
           </View>
 
           {!server ? (

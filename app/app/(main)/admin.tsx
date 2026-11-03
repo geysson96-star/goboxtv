@@ -27,7 +27,7 @@ function when(t?: number | null) {
 }
 
 function shareText(u: AdminUser) {
-  return `Olá, ${u.name}! Seu acesso ao Vidro TV:\n\nServidor: ${apiUrl().replace(/^https:\/\//, '')}\nCódigo: ${u.code}\n\nAbra o app, digite o servidor (só na primeira vez) e depois o código. Vale para ${u.maxDevices} aparelho${u.maxDevices > 1 ? 's' : ''}.`;
+  return `Olá, ${u.name}! Seu acesso ao GoBoxTV:\n\nServidor: ${apiUrl().replace(/^https:\/\//, '')}\nCódigo: ${u.code}\n\nAbra o app, digite o servidor (só na primeira vez) e depois o código. Vale para ${u.maxDevices} aparelho${u.maxDevices > 1 ? 's' : ''}.`;
 }
 
 export default function Admin() {

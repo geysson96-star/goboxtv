@@ -251,7 +251,7 @@ export default function Settings() {
               <Button icon="people-outline" label="Área do administrador" onPress={() => router.navigate('/admin')} />
             </View>
             <Muted>
-              <Ionicons name="information-circle-outline" size={14} color={colors.muted} /> Vidro TV é um player: ele toca listas que você ou o administrador cadastram.
+              <Ionicons name="information-circle-outline" size={14} color={colors.muted} /> GoBoxTV é um player: ele toca listas que você ou o administrador cadastram.
             </Muted>
           </>
         ) : null}
