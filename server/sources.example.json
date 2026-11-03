@@ -1,0 +1,9 @@
+{
+  "_comment": "Copie para data/sources.json. Estas fontes aparecem como AUTOMÁTICAS no app de todos os usuários. Use apenas listas legais (canais abertos, públicos, conteúdo seu ou licenciado).",
+  "sources": [
+    { "id": "auto-br", "name": "Canais abertos · Brasil", "kind": "m3u", "url": "https://iptv-org.github.io/iptv/countries/br.m3u", "priority": 1 },
+    { "id": "auto-por", "name": "Canais em português", "kind": "m3u", "url": "https://iptv-org.github.io/iptv/languages/por.m3u", "priority": 2 },
+    { "id": "auto-pt", "name": "Canais abertos · Portugal", "kind": "m3u", "url": "https://iptv-org.github.io/iptv/countries/pt.m3u", "priority": 3 },
+    { "id": "auto-news", "name": "Notícias do mundo", "kind": "m3u", "url": "https://iptv-org.github.io/iptv/categories/news.m3u", "priority": 4, "enabled": false }
+  ]
+}

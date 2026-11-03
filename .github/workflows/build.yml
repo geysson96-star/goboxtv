@@ -1,0 +1,109 @@
+# Compila o Vidro TV de graça no GitHub:
+#  - APK para celular, Android TV e TV Box
+#  - Instalador para Windows (.exe)
+# Roda sozinho a cada envio para a branch main, ou pelo botão "Run workflow" na aba Actions.
+name: Gerar aplicativos
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build
+  cancel-in-progress: true
+
+jobs:
+  android:
+    name: APK (celular e TV Box)
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Instalar dependências
+        working-directory: app
+        run: npm install --no-audit --no-fund
+      - name: Gerar projeto Android
+        working-directory: app
+        run: CI=1 npx expo prebuild --platform android --no-install
+      - name: Compilar APK
+        working-directory: app/android
+        run: ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=armeabi-v7a,arm64-v8a
+      - name: Assinar APK
+        env:
+          KS_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+          KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          APK=app/android/app/build/outputs/apk/release/app-release.apk
+          mkdir -p out
+          if [ -n "$KS_B64" ]; then
+            echo "$KS_B64" | base64 -d > vidro.jks
+            BT=$(ls -d $ANDROID_HOME/build-tools/* | sort -V | tail -1)
+            $BT/zipalign -f -p 4 "$APK" aligned.apk
+            $BT/apksigner sign --ks vidro.jks --ks-key-alias vidro --ks-pass env:KS_PASS --key-pass env:KS_PASS --out out/VidroTV.apk aligned.apk
+            rm -f vidro.jks
+          else
+            cp "$APK" out/VidroTV.apk
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: VidroTV-Android
+          path: out/VidroTV.apk
+
+  windows:
+    name: Instalador Windows
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Gerar versão web
+        working-directory: app
+        run: |
+          npm install --no-audit --no-fund
+          npx expo export --platform web
+        env:
+          CI: 1
+      - name: Gerar instalador
+        working-directory: desktop
+        run: |
+          npm install --no-audit --no-fund
+          npx electron-builder --win nsis --publish never
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+      - name: Separar instalador
+        shell: bash
+        run: mkdir -p out && cp desktop/dist/*.exe "out/VidroTV-Instalador-Windows.exe"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: VidroTV-Windows
+          path: out/VidroTV-Instalador-Windows.exe
+
+  release:
+    name: Publicar downloads
+    needs: [android, windows]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: files
+          merge-multiple: true
+      - name: Criar versão com os arquivos
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="v$(date -u +%Y.%m.%d-%H%M)"
+          gh release create "$TAG" files/* --repo "$GITHUB_REPOSITORY" --title "Vidro TV $TAG" \
+            --notes "APK: instale no celular, Android TV ou TV Box. EXE: instalador para Windows."

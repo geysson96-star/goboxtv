@@ -1,0 +1,19 @@
+name = "vidro-tv"
+main = "src/worker.js"
+compatibility_date = "2026-10-01"
+workers_dev = true
+
+# As páginas do painel são importadas como texto.
+[[rules]]
+type = "Text"
+globs = ["**/*.html"]
+fallthrough = true
+
+[vars]
+CODE_PREFIX = "VIDRO"
+
+# O script deploy.mjs preenche o database_id automaticamente.
+[[d1_databases]]
+binding = "DB"
+database_name = "vidro-tv-db"
+database_id = "PREENCHIDO_PELO_SCRIPT"

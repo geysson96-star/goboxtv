@@ -1,0 +1,34 @@
+{
+  "expo": {
+    "name": "Vidro TV",
+    "slug": "vidro-tv",
+    "scheme": "vidrotv",
+    "version": "1.0.0",
+    "orientation": "default",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#070A12",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.vidrotv.app"
+    },
+    "android": {
+      "package": "com.vidrotv.app",
+      "usesCleartextTraffic": true
+    },
+    "web": {
+      "output": "single",
+      "bundler": "metro",
+      "name": "Vidro TV",
+      "backgroundColor": "#070A12"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-video",
+      "./plugins/withAndroidTV.js"
+    ],
+    "experiments": {
+      "typedRoutes": false
+    }
+  }
+}

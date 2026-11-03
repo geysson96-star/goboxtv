@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Painel master · Vidro TV</title>
+<style>
+  :root { --bg:#070A12; --text:#F2F5FA; --muted:#A9B4C6; --accent:#5CC8FF; --on:#04121C; --green:#4ADE80; --yellow:#FBBF24; --red:#F87171; }
+  * { box-sizing: border-box; }
+  body { margin:0; min-height:100vh; background:var(--bg); color:var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; overflow-x:hidden; }
+  .wrap { max-width:1100px; margin:0 auto; padding:24px 16px; display:flex; gap:16px; flex-wrap:wrap; }
+  .glass { background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.14); backdrop-filter:blur(26px); -webkit-backdrop-filter:blur(26px); border-radius:22px; }
+  main { flex: 999 1 560px; min-width:0; display:flex; flex-direction:column; gap:12px; }
+  aside { flex: 1 1 300px; padding:20px; align-self:flex-start; display:flex; flex-direction:column; gap:10px; }
+  h1 { margin:0; font-size:26px; } h2 { margin:0; font-size:19px; }
+  .muted { color:var(--muted); font-size:14px; }
+  input { width:100%; height:46px; border-radius:14px; border:1px solid rgba(255,255,255,.2); background:rgba(0,0,0,.3); color:var(--text); font-size:15px; padding:0 14px; }
+  button { height:40px; padding:0 16px; border-radius:20px; border:1px solid rgba(255,255,255,.2); background:rgba(255,255,255,.08); color:var(--text); font-weight:700; cursor:pointer; }
+  button.primary { background:var(--accent); color:var(--on); border:0; }
+  button.danger { background:rgba(248,113,113,.15); border-color:rgba(248,113,113,.5); }
+  .seg { display:flex; gap:6px; } .seg button { flex:1; } .seg button.on { background:rgba(92,200,255,.25); border-color:var(--accent); }
+  .row { padding:12px 14px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  .row .info { flex:1 1 220px; min-width:0; }
+  .row .name { font-weight:700; }
+  .pill { padding:3px 10px; border-radius:999px; font-size:12px; font-weight:800; }
+  code { font-family: ui-monospace, monospace; }
+  .stats { display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:10px; }
+  .stat { padding:12px 14px; } .stat b { display:block; font-size:24px; }
+  .created { padding:12px; border-radius:16px; background:rgba(74,222,128,.1); border:1px solid rgba(74,222,128,.4); }
+  #login { max-width:420px; margin:12vh auto; padding:24px; display:flex; flex-direction:column; gap:12px; }
+  .err { color:#FCA5A5; font-weight:700; }
+</style>
+</head>
+<body>
+<div id="login" class="glass">
+  <h1>Painel master</h1>
+  <p class="muted">Digite a chave master (MASTER_KEY) do servidor.</p>
+  <input id="key" type="password" placeholder="Chave master" autocomplete="current-password">
+  <button class="primary" id="enter">Entrar</button>
+  <div id="loginErr" class="err" role="status"></div>
+</div>
+
+<div class="wrap" id="app" hidden>
+  <main>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <h1>Usuários</h1><span class="pill" style="background:rgba(251,191,36,.16);border:1px solid rgba(251,191,36,.45);color:#FDE68A">MASTER</span>
+      <span style="flex:1"></span><button id="reload">Atualizar</button><button id="logout">Sair</button>
+    </div>
+    <div class="muted">Só quem tem um código criado por você consegue entrar no app. Usuários ilimitados.</div>
+    <div class="stats" id="stats"></div>
+    <div id="err" class="err" role="status"></div>
+    <div id="list" style="display:flex;flex-direction:column;gap:8px"></div>
+  </main>
+  <aside class="glass">
+    <h2>Novo usuário</h2>
+    <label class="muted" for="name">Nome da pessoa</label>
+    <input id="name" placeholder="Ex.: Ana Paula">
+    <div class="muted">Aparelhos por código</div>
+    <div class="seg" id="devs"></div>
+    <div class="muted">Validade</div>
+    <div class="seg" id="valid"></div>
+    <button class="primary" id="create">Gerar código de acesso</button>
+    <div id="created"></div>
+  </aside>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let KEY = sessionStorage.getItem('vk') || '';
+let maxDevices = 2, validDays = null;
+const ST = { active: ['Ativo', '#4ADE80'], pending: ['Aguardando', '#FBBF24'], blocked: ['Bloqueado', '#F87171'] };
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+
+async function api(path, opts = {}) {
+  const r = await fetch(path, { ...opts, headers: { 'Content-Type': 'application/json', 'X-Master-Key': KEY } });
+  const b = await r.json().catch(() => ({}));
+  if (!r.ok) { const e = new Error(b.error || 'Erro'); e.status = r.status; throw e; }
+  return b;
+}
+function when(t) {
+  if (!t) return 'nunca entrou';
+  const d = Date.now() - t;
+  if (d < 300000) return 'online agora';
+  if (d < 86400000) return 'hoje ' + new Date(t).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  return 'há ' + Math.round(d / 86400000) + ' dia(s)';
+}
+function seg(el, opts, get, set) {
+  el.innerHTML = '';
+  for (const [v, l] of opts) {
+    const b = document.createElement('button'); b.textContent = l; b.className = get() === v ? 'on' : '';
+    b.onclick = () => { set(v); seg(el, opts, get, set); }; el.appendChild(b);
+  }
+}
+function shareText(u) {
+  return `Olá, ${u.name}! Seu acesso ao Vidro TV:\n\nServidor: ${location.host}\nCódigo: ${u.code}\n\nAbra o app, digite o servidor (só na primeira vez) e depois o código. Vale para ${u.maxDevices} aparelho(s).`;
+}
+async function share(u) {
+  const t = shareText(u);
+  if (navigator.share) { try { await navigator.share({ text: t }); return; } catch {} }
+  await navigator.clipboard.writeText(t); alert('Mensagem copiada. Cole no WhatsApp.');
+}
+async function load() {
+  $('err').textContent = '';
+  try {
+    const { users } = await api('/api/admin/users');
+    const c = (s) => users.filter((u) => u.status === s).length;
+    $('stats').innerHTML = [['Usuários', users.length, '#F2F5FA'], ['Ativos', c('active'), '#4ADE80'], ['Aguardando', c('pending'), '#FBBF24'], ['Limite', 'Ilimitado', '#9BDDFF']]
+      .map(([l, v, col]) => `<div class="glass stat"><span class="muted">${l}</span><b style="color:${col}">${v}</b></div>`).join('');
+    $('list').innerHTML = '';
+    for (const u of users) {
+      const [lab, col] = ST[u.status];
+      const row = document.createElement('div'); row.className = 'glass row';
+      row.innerHTML = `<div class="info"><div class="name">${esc(u.name)}</div><div class="muted"><code>${esc(u.code)}</code> · ${u.devices.length}/${u.maxDevices} aparelho(s) · ${when(u.lastSeen)}${u.expiresAt ? ' · vence ' + new Date(u.expiresAt).toLocaleDateString('pt-BR') : ''}</div></div>
+        <span class="pill" style="background:${col}22;border:1px solid ${col};color:${col}">${lab}</span>`;
+      const btn = (label, cls, fn) => { const b = document.createElement('button'); b.textContent = label; if (cls) b.className = cls; b.onclick = fn; row.appendChild(b); };
+      btn(u.status === 'blocked' ? 'Liberar' : 'Bloquear', u.status === 'blocked' ? '' : 'danger', () => act(`/api/admin/users/${u.id}`, 'PATCH', { status: u.status === 'blocked' ? 'active' : 'blocked' }));
+      btn('Enviar', '', () => share(u));
+      btn('Novo código', '', () => confirm('O código atual deixará de valer. Continuar?') && act(`/api/admin/users/${u.id}/regenerate`, 'POST'));
+      btn('Liberar aparelhos', '', () => act(`/api/admin/users/${u.id}/reset-devices`, 'POST'));
+      btn('Apagar', 'danger', () => confirm(`Apagar ${u.name}?`) && act(`/api/admin/users/${u.id}`, 'DELETE'));
+      $('list').appendChild(row);
+    }
+    if (!users.length) $('list').innerHTML = '<div class="muted">Nenhum usuário ainda. Crie o primeiro ao lado.</div>';
+  } catch (e) {
+    if (e.status === 401) return logout(e.message);
+    $('err').textContent = e.message;
+  }
+}
+async function act(path, method, body) {
+  try { await api(path, { method, body: body ? JSON.stringify(body) : undefined }); } catch (e) { $('err').textContent = e.message; }
+  load();
+}
+function show() { $('login').hidden = true; $('app').hidden = false; load(); }
+function logout(msg) { KEY = ''; sessionStorage.removeItem('vk'); $('app').hidden = true; $('login').hidden = false; $('loginErr').textContent = msg || ''; }
+
+$('enter').onclick = () => { KEY = $('key').value; sessionStorage.setItem('vk', KEY); show(); };
+$('key').onkeydown = (e) => e.key === 'Enter' && $('enter').click();
+$('reload').onclick = load;
+$('logout').onclick = () => logout();
+$('create').onclick = async () => {
+  const name = $('name').value.trim();
+  if (!name) return ($('err').textContent = 'Digite o nome.');
+  try {
+    const { user } = await api('/api/admin/users', { method: 'POST', body: JSON.stringify({ name, maxDevices, validDays }) });
+    $('name').value = '';
+    $('created').innerHTML = `<div class="created"><div class="muted" style="color:#86EFAC">Código criado para ${esc(user.name)}</div><div style="font:800 22px ui-monospace,monospace;margin:6px 0">${esc(user.code)}</div></div>`;
+    const b = document.createElement('button'); b.className = 'primary'; b.textContent = 'Enviar para a pessoa'; b.onclick = () => share(user);
+    $('created').firstChild.appendChild(b);
+    load();
+  } catch (e) { $('err').textContent = e.message; }
+};
+seg($('devs'), [[1, '1'], [2, '2'], [3, '3'], [5, '5']], () => maxDevices, (v) => (maxDevices = v));
+seg($('valid'), [[null, 'Sem prazo'], [30, '30 dias'], [365, '1 ano']], () => validDays, (v) => (validDays = v));
+if (KEY) show();
+</script>
+</body>
+</html>

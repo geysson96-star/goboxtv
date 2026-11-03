@@ -1,0 +1,16 @@
+node_modules/
+app/dist/
+app/android/
+app/ios/
+app/.expo/
+app/.env
+desktop/dist/
+server/data/
+server/MASTER_KEY.txt
+server/.railway-ok
+cloudflare/.wrangler/
+cloudflare/.dev.vars
+cloudflare/MASTER_KEY.txt
+cloudflare/wrangler.local.toml
+*.jks
+package-lock.json
