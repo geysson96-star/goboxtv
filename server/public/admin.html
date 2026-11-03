@@ -55,7 +55,7 @@
   <aside class="glass">
     <h2>Novo usuário</h2>
     <label class="muted" for="name">Nome da pessoa</label>
-    <input id="name" placeholder="Ex.: Ana Paula">
+    <input id="name" placeholder="Ex.: Ana Paula (opcional)">
     <div class="muted">Aparelhos por código</div>
     <div class="seg" id="devs"></div>
     <div class="muted">Validade</div>
@@ -68,6 +68,13 @@
 <script>
 const $ = (id) => document.getElementById(id);
 let KEY = sessionStorage.getItem('vk') || '';
+// Atalho ABRIR-PAINEL: a chave chega no fragmento (#k=...), que nunca vai para o servidor.
+if (location.hash.startsWith('#k=')) {
+  KEY = decodeURIComponent(location.hash.slice(3));
+  try { sessionStorage.setItem('vk', KEY); } catch {}
+  history.replaceState(null, '', location.pathname);
+}
+let USERS = [];
 let maxDevices = 2, validDays = null;
 const ST = { active: ['Ativo', '#4ADE80'], pending: ['Aguardando', '#FBBF24'], blocked: ['Bloqueado', '#F87171'] };
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
@@ -104,6 +111,7 @@ async function load() {
   $('err').textContent = '';
   try {
     const { users } = await api('/api/admin/users');
+    USERS = users;
     const c = (s) => users.filter((u) => u.status === s).length;
     $('stats').innerHTML = [['Usuários', users.length, '#F2F5FA'], ['Ativos', c('active'), '#4ADE80'], ['Aguardando', c('pending'), '#FBBF24'], ['Limite', 'Ilimitado', '#9BDDFF']]
       .map(([l, v, col]) => `<div class="glass stat"><span class="muted">${l}</span><b style="color:${col}">${v}</b></div>`).join('');
@@ -139,8 +147,8 @@ $('key').onkeydown = (e) => e.key === 'Enter' && $('enter').click();
 $('reload').onclick = load;
 $('logout').onclick = () => logout();
 $('create').onclick = async () => {
-  const name = $('name').value.trim();
-  if (!name) return ($('err').textContent = 'Digite o nome.');
+  // Sem nome digitado: cria "Convidado N" automaticamente.
+  const name = $('name').value.trim() || `Convidado ${USERS.filter((u) => /^Convidado \d+$/.test(u.name)).length + 1}`;
   try {
     const { user } = await api('/api/admin/users', { method: 'POST', body: JSON.stringify({ name, maxDevices, validDays }) });
     $('name').value = '';
