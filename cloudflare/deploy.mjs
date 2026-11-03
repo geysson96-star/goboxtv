@@ -56,8 +56,50 @@ if (!db?.uuid) fail('Não consegui criar o banco "vidro-tv-db". Rode o script de
 const toml = fs.readFileSync('wrangler.toml', 'utf8').replace(/database_id = ".*"/, `database_id = "${db.uuid}"`);
 fs.writeFileSync('wrangler.toml', toml);
 
+// Contas novas da Cloudflare precisam de um subdomínio "workers.dev" antes do primeiro deploy.
+// O script cria um sozinho, usando o login que acabou de ser feito (o token fica só neste PC).
+async function ensureSubdomain() {
+  const parse = (s) => {
+    try {
+      return JSON.parse((s || '').slice((s || '').indexOf('{')));
+    } catch {
+      return null;
+    }
+  };
+  const who = parse(wrangler(['whoami', '--json'], { capture: true }).stdout);
+  const accountId = who?.accounts?.[0]?.id || who?.account?.id;
+  const tok = parse(wrangler(['auth', 'token', '--json'], { capture: true }).stdout);
+  const token = tok?.token || tok?.value;
+  if (!accountId || !token) return null;
+  const api = `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/subdomain`;
+  const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
+  const cur = await fetch(api, { headers }).then((r) => r.json()).catch(() => null);
+  if (cur?.result?.subdomain) return cur.result.subdomain;
+  const base = (who?.email || '').split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 20);
+  const candidates = [base && `${base}-tv`, 'vidro-tv-app', `vidrotv-${crypto.randomBytes(3).toString('hex')}`, `vidrotv-${crypto.randomBytes(4).toString('hex')}`].filter(Boolean);
+  for (const name of candidates) {
+    const r = await fetch(api, { method: 'PUT', headers, body: JSON.stringify({ subdomain: name }) }).then((x) => x.json()).catch(() => null);
+    if (r?.success) {
+      console.log(`Subdomínio criado: ${name}.workers.dev`);
+      // a Cloudflare leva alguns segundos para ativar
+      await new Promise((res) => setTimeout(res, 8000));
+      return name;
+    }
+  }
+  return null;
+}
+
+step('Preparando o endereço grátis (workers.dev)');
+const sub = await ensureSubdomain();
+if (sub) console.log(`Endereço base: ${sub}.workers.dev`);
+
 step('Publicando o servidor');
-const dep = wrangler(['deploy'], { capture: true });
+let dep = wrangler(['deploy'], { capture: true });
+if (dep.status !== 0 && /workers\.dev subdomain/i.test(dep.stdout || '')) {
+  // subdomínio recém-criado pode demorar a valer: tenta mais uma vez
+  await new Promise((res) => setTimeout(res, 15000));
+  dep = wrangler(['deploy'], { capture: true });
+}
 process.stdout.write(dep.stdout || '');
 if (dep.status !== 0) {
   fail('A publicação falhou. Se a Cloudflare pediu um subdomínio "workers.dev", crie em dash.cloudflare.com › Workers & Pages e rode de novo.');
