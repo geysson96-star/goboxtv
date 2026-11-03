@@ -22,7 +22,6 @@ const SECTIONS: { id: Section; label: string }[] = [
   { id: 'player', label: 'Player e qualidade' },
   { id: 'look', label: 'Aparência' },
   { id: 'parental', label: 'Controle parental' },
-  { id: 'account', label: 'Conta' },
 ];
 
 function Input(props: React.ComponentProps<typeof TextInput>) {

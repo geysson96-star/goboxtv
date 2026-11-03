@@ -5,20 +5,17 @@ import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { GlassSurface } from '../../src/components/GlassSurface';
 import { H1, Muted, T } from '../../src/components/ui';
-import { useAuth } from '../../src/store/auth';
 import { colors } from '../../src/theme';
 
 type Item = { href: string; label: string; hint: string; icon: keyof typeof Ionicons.glyphMap };
 
 export default function More() {
-  const isMaster = useAuth((s) => s.session?.user.role === 'master' || !!s.masterKey);
   const items: Item[] = [
     { href: '/search', label: 'Buscar', hint: 'Canais, filmes e séries', icon: 'search-outline' },
     { href: '/series', label: 'Séries', hint: 'Por região e gênero', icon: 'albums-outline' },
     { href: '/new', label: 'Lançamentos', hint: 'Filmes mais recentes', icon: 'star-outline' },
     { href: '/guide', label: 'Guia de TV', hint: 'Grade de horários', icon: 'grid-outline' },
     { href: '/settings', label: 'Configurações', hint: 'Minhas listas, aparência, conta', icon: 'settings-outline' },
-    { href: '/admin', label: isMaster ? 'Usuários' : 'Área do administrador', hint: 'Criar e gerenciar convites', icon: 'people-outline' },
   ];
   return (
     <ScrollView contentContainerStyle={{ padding: 16, gap: 10 }}>
